@@ -1,111 +1,9 @@
 #include "imports.h"
 #include "defines.h"
-
-static const char* _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
-static const char* _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
-static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
+#include "capture_handler.h"
+#include "website_handler.h"
 
 httpd_handle_t stream_httpd = NULL;
-
-const char index_html[] PROGMEM = R"rawliteral(
-    <!DOCTYPE HTML><html>
-    <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { text-align:center; }
-        .vert { margin-bottom: 10%; }
-        .hori{ margin-bottom: 0%; }
-    </style>
-    </head>
-    <body>
-    <div id="container">
-        <h2>ESP32-CAM Last Photo</h2>
-        <p>It might take more than 5 seconds to capture a photo.</p>
-        <p>
-        <button onclick="rotatePhoto();">ROTATE</button>
-        <button onclick="capturePhoto()">CAPTURE PHOTO</button>
-        <button onclick="location.reload();">REFRESH PAGE</button>
-        </p>
-    </div>
-    <div><img src="saved-photo" id="photo" width="70%"></div>
-    </body>
-    <script>
-    var deg = 0;
-    function capturePhoto() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', "/capture", true);
-        xhr.send();
-    }
-    function rotatePhoto() {
-        var img = document.getElementById("photo");
-        deg += 90;
-        if(isOdd(deg/90)){ document.getElementById("container").className = "vert"; }
-        else{ document.getElementById("container").className = "hori"; }
-        img.style.transform = "rotate(" + deg + "deg)";
-    }
-    function isOdd(n) { return Math.abs(n % 2) == 1; }
-    </script>
-    </html>)rawliteral"
-;
-
-static esp_err_t stream_handler(httpd_req_t *req){
-  camera_fb_t * fb = NULL;
-  esp_err_t res = ESP_OK;
-  size_t _jpg_buf_len = 0;
-  uint8_t * _jpg_buf = NULL;
-  char * part_buf[64];
-
-  res = httpd_resp_set_type(req, _STREAM_CONTENT_TYPE);
-  if(res != ESP_OK){
-    return res;
-  }
-
-  while(true){
-    fb = esp_camera_fb_get();
-    if (!fb) {
-      Serial.println("Camera capture failed");
-      res = ESP_FAIL;
-    } else {
-      if(fb->width > 400){
-        if(fb->format != PIXFORMAT_JPEG){
-          bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
-          esp_camera_fb_return(fb);
-          fb = NULL;
-          if(!jpeg_converted){
-            Serial.println("JPEG compression failed");
-            res = ESP_FAIL;
-          }
-        } else {
-          _jpg_buf_len = fb->len;
-          _jpg_buf = fb->buf;
-        }
-      }
-    }
-    if(res == ESP_OK){
-      size_t hlen = snprintf((char *)part_buf, 64, _STREAM_PART, _jpg_buf_len);
-      res = httpd_resp_send_chunk(req, (const char *)part_buf, hlen);
-    }
-    if(res == ESP_OK){
-      res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);
-    }
-    if(res == ESP_OK){
-      res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
-    }
-    if(fb){
-      esp_camera_fb_return(fb);
-      fb = NULL;
-      _jpg_buf = NULL;
-    } else if(_jpg_buf){
-      free(_jpg_buf);
-      _jpg_buf = NULL;
-    }
-    if(res != ESP_OK){
-      break;
-    }
-    //Serial.printf("MJPG: %uB\n",(uint32_t)(_jpg_buf_len));
-  }
-  return res;
-}
 
 void startCameraServer(){
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -114,6 +12,13 @@ void startCameraServer(){
   httpd_uri_t index_uri = {
     .uri       = "/",
     .method    = HTTP_GET,
+    .handler   = get_handler,
+    .user_ctx  = NULL
+  };
+
+  httpd_uri_t capture_uri = {
+    .uri       = "/capture",
+    .method    = HTTP_GET,
     .handler   = stream_handler,
     .user_ctx  = NULL
   };
@@ -121,6 +26,7 @@ void startCameraServer(){
   //Serial.printf("Starting web server on port: '%d'\n", config.server_port);
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &index_uri);
+    httpd_register_uri_handler(stream_httpd, &capture_uri);
   }
 }
 
@@ -151,7 +57,6 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG; 
-  
 
   config.frame_size = FRAMESIZE_SVGA;
   config.jpeg_quality = 12;
@@ -175,17 +80,6 @@ void setup() {
   
   Serial.print("Camera Stream Ready! Go to: http://");
   Serial.print(WiFi.localIP());
-
-    // Route for root / web page
-  // server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-  //   request->send_P(200, "text/html", index_html);
-  // });
-
-  // server.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
-  //   takeNewPhoto = true;
-  //   request->send_P(200, "text/plain", "Taking Photo");
-  // });
-
   
   // Start streaming web server
   startCameraServer();
