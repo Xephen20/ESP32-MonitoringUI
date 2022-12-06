@@ -10,7 +10,7 @@ void startCameraServer(){
   config.server_port = 80;
 
   httpd_uri_t index_uri = {
-    .uri       = "/",
+    .uri       = "/home",
     .method    = HTTP_GET,
     .handler   = get_handler,
     .user_ctx  = NULL
@@ -18,6 +18,21 @@ void startCameraServer(){
 
   httpd_uri_t capture_uri = {
     .uri       = "/capture",
+    .method    = HTTP_GET,
+    .handler   = stream_handler,
+    .user_ctx  = NULL
+  };
+
+  httpd_uri_t capture_uri = {
+    .uri       = "/files",
+    .method    = HTTP_GET,
+    .handler   = stream_handler,
+    .user_ctx  = NULL
+  };
+
+  httpd_uri_t capture_uri = {
+    capture_image = true;
+    .uri       = "/settings",
     .method    = HTTP_GET,
     .handler   = stream_handler,
     .user_ctx  = NULL

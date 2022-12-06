@@ -23,3 +23,5 @@ const char* password = "dupa1234";
 #define VSYNC_GPIO_NUM    25
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
+
+bool capture_image = false;
