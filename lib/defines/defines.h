@@ -1,6 +1,6 @@
 // Wifi Credentials
-const char* ssid = "iPhone 13 Pro (Dawid)";
-const char* password = "dupa1234";
+const char* ssid = "PLAY Internet 4G 2.4 GHz";
+const char* password = "F894BDF5";
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 #define CAMERA_MODEL_AI_THINKER
@@ -24,4 +24,11 @@ const char* password = "dupa1234";
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+// Sd card
+#define EEPROM_SIZE 1
+
 bool capture_image = false;
+
+httpd_handle_t stream_httpd = NULL;
+
+File root;

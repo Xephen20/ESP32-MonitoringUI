@@ -12,7 +12,7 @@ static esp_err_t get_handler(httpd_req_t *req)
             <div class=\"button-grid\">\
                 <div class=\"button\" id=\"button-3\">\
                     <div id=\"circle\"></div>\
-                    <a href=\"#\">Files</a>\
+                    <a href=\"/files\">Files</a>\
                 </div>\
             </div>\
             <div class=\"button-grid\">\
