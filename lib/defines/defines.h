@@ -32,3 +32,5 @@ bool capture_image = false;
 httpd_handle_t stream_httpd = NULL;
 
 File root;
+
+File root = SD_MMC.open("/");

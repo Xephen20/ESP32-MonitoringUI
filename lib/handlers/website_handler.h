@@ -10,28 +10,36 @@ static esp_err_t get_handler(httpd_req_t *req)
         </div>\
         <div class=\"buttons contains\">\
             <div class=\"button-grid\">\
-                <div class=\"button\" id=\"button-3\">\
-                    <div id=\"circle\"></div>\
-                    <a href=\"/files\">Files</a>\
-                </div>\
+                <a href=\"/files\">\
+                    <div class=\"button\" id=\"button-3\">\
+                        <div id=\"circle\"></div>\
+                        Files\
+                    </div>\
+                </a>\
             </div>\
             <div class=\"button-grid\">\
-                <div class=\"button\" id=\"button-3\">\
-                    <div id=\"circle\"></div>\
-                    <a href=\"#\">Photo</a>\
-                </div>\
+                <a href=\"#\">\
+                    <div class=\"button\" id=\"button-3\">\
+                        <div id=\"circle\"></div>\
+                        Capture\
+                    </div>\
+                </a>\
             </div>\
             <div class=\"button-grid\">\
-                <div class=\"button\" id=\"button-3\">\
-                    <div id=\"circle\"></div>\
-                    <a href=\"#\">Video</a>\
-                </div>\
+                <a href=\"#\">\
+                    <div class=\"button\" id=\"button-3\">\
+                        <div id=\"circle\"></div>\
+                        Record\
+                    </div>\
+                </a>\
             </div>\
             <div class=\"button-grid\">\
-                <div class=\"button\" id=\"button-3\">\
-                    <div id=\"circle\"></div>\
-                    <a href=\"#\">Settings</a>\
-                </div>\
+                <a href=\"#\">\
+                    <div class=\"button\" id=\"button-3\">\
+                        <div id=\"circle\"></div>\
+                        Settings\
+                    </div>\
+                </a>\
             </div>\
         </div>\
         <div class=\"footer contains\" style=\"text-align:right\">Footer &nbsp;&nbsp;</div>\
@@ -93,6 +101,7 @@ static esp_err_t get_handler(httpd_req_t *req)
     }\
     /* Third Button */\
     #button-3 {\
+        color: #000000;\
         position: relative;\
         overflow: hidden;\
         cursor: pointer;\
@@ -119,9 +128,10 @@ static esp_err_t get_handler(httpd_req_t *req)
         opacity: 1;\
         top: -70px;\
         left: -70px;\
+        color: #000000;\
     }\
     #button-3:hover a {\
-        color: #2D3142;\
+        color: #000000;\
     }\
     .center-div{\
         text-align: center;\
