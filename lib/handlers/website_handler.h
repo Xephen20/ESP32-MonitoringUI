@@ -18,7 +18,7 @@ static esp_err_t get_handler(httpd_req_t *req)
                 </a>\
             </div>\
             <div class=\"button-grid\">\
-                <a href=\"#\">\
+                <a href=\"#\" onclick=\"capturePhoto()\">\
                     <div class=\"button\" id=\"button-3\">\
                         <div id=\"circle\"></div>\
                         Capture\
@@ -46,6 +46,14 @@ static esp_err_t get_handler(httpd_req_t *req)
     </div>\
 </body>\
 </html>\
+<script>\
+  function capturePhoto() {\
+    var xhr = new XMLHttpRequest();\
+    xhr.open(\'GET\', \"/take_photo\", true);\
+    xhr.send();\
+    window.location.reload();\
+  }\
+</script>\
 <style>\
     .container{\
         width: 50%;\

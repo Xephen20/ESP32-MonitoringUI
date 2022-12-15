@@ -2,6 +2,9 @@
 const char* ssid = "PLAY Internet 4G 2.4 GHz";
 const char* password = "F894BDF5";
 
+//const char* ssid = "iPhone 13 Pro (Dawid)";
+//const char* password = "dupa1234";
+
 #define PART_BOUNDARY "123456789000000000000987654321"
 #define CAMERA_MODEL_AI_THINKER
 
@@ -31,6 +34,11 @@ bool capture_image = false;
 
 httpd_handle_t stream_httpd = NULL;
 
-File root;
+// NTP Server Current time
 
-File root = SD_MMC.open("/");
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 1;
+const int   daylightOffset_sec = 3600;
+
+struct tm timeinfo;
+char time_string[128];

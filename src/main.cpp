@@ -30,19 +30,19 @@ void startCameraServer(){
     .user_ctx  = NULL
   };
 
-  // httpd_uri_t settings_uri = {
-  //   .uri       = "/settings",
-  //   .method    = HTTP_GET,
-  //   .handler   = settings_handler,
-  //   .user_ctx  = NULL
-  // };
+  httpd_uri_t take_photo_uri = {
+    .uri       = "/take_photo",
+    .method    = HTTP_GET,
+    .handler   = take_photo_handler,
+    .user_ctx  = NULL
+  };
   
   //Serial.printf("Starting web server on port: '%d'\n", config.server_port);
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &index_uri);
     httpd_register_uri_handler(stream_httpd, &capture_uri);
     httpd_register_uri_handler(stream_httpd, &files_uri);
-    //httpd_register_uri_handler(stream_httpd, &settings_uri);
+    httpd_register_uri_handler(stream_httpd, &take_photo_uri);
   }
 }
 
@@ -104,12 +104,15 @@ void setup() {
   
   uint64_t cardSize = SD_MMC.cardSize() / (1024 * 1024);
   Serial.printf("\nSD_MMC Card Size: %lluMB\n", cardSize);
+  
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
 
-  // Start streaming web server
   startCameraServer();
 }
-
-
 
 void loop() {
   delay(1);

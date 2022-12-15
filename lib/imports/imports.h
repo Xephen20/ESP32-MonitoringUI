@@ -10,3 +10,5 @@
 #include "FS.h"
 #include <SPI.h>
 #include "SD_MMC.h"
+#include "time.h"
+#include <EEPROM.h>

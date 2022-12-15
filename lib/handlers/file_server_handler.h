@@ -6,6 +6,7 @@ static esp_err_t file_server_handler(httpd_req_t *req){
     int MAX_FILES = 10;
 
     char *file_names[MAX_FILES];
+    File root = SD_MMC.open("/");
     File file = root.openNextFile();
     size_t file_count = 0;
     while (file && file_count < MAX_FILES) {
@@ -42,4 +43,10 @@ static esp_err_t file_server_handler(httpd_req_t *req){
     }
     return ESP_OK;
 
+}
+
+static esp_err_t take_photo_handler(httpd_req_t *req){
+    Serial.println("take_photo");
+    capture_image = true;
+    return ESP_OK;
 }

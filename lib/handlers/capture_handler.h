@@ -46,6 +46,42 @@ static esp_err_t stream_handler(httpd_req_t *req){
       res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
     }
     if(fb){
+      if (capture_image == true){
+        Serial.println("save image stage1");
+        
+        time_t rawtime;
+        time(&rawtime);
+        timeinfo = *localtime(&rawtime);
+
+        // Format the time as a string
+        strftime(time_string, sizeof(time_string), "%A%B%d%Y%H%M%S", &timeinfo);
+
+        // Append ".jpg" to time_string
+        strcat(time_string, ".jpg");
+
+        // Prepend "/" to time_string
+        char final_string[130];
+        final_string[0] = '/';
+        strcpy(final_string + 1, time_string);
+
+        printf("%s\n", final_string);
+
+
+        fs::FS &fs = SD_MMC;
+        //Serial.printf("Picture file name: %s\n", time_string);
+        
+        File file = fs.open(final_string, FILE_WRITE);
+        if(!file){
+          Serial.println("Failed to open file in writing mode");
+        } 
+        else {
+          file.write(fb->buf, fb->len); // payload (image), payload length
+          Serial.printf("Saved file to path: %s\n", final_string);
+        }
+        Serial.println("save image stage2");
+        capture_image = false;
+      }
+
       esp_camera_fb_return(fb);
       fb = NULL;
       _jpg_buf = NULL;
