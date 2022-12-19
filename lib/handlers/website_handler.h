@@ -1,14 +1,19 @@
 static esp_err_t get_handler(httpd_req_t *req){
-    char *response_message = "<!DOCTYPE html>\
-<html>\
-<head>\
-  <title>ESP Camera</title>\
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\
-  <link rel=\"icon\" href=\"data:,\">\
-</head>\
-<body>\
-  <div class=\"topnav\">\
-    <h1>ESP Camera</h1>\
+    const char* ip_str = WiFi.localIP().toString().c_str();
+
+    char *header = "<!DOCTYPE html>\
+      <html>\
+      <head>\
+        <title>ESP Camera </title>\
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\
+        <link rel=\"icon\" href=\"data:,\">\
+      </head>\
+      <body>\
+        <div class=\"topnav\">\
+          <h1>ESP Camera"\
+    ;
+
+    char *bottom = "</h1>\
   </div>\
   <div class=\"content\">\
     <div class=\"card-grid\">\
@@ -98,7 +103,12 @@ label {\
 }\
 </style>\
 ";
-    httpd_resp_send(req, response_message, HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
+  httpd_resp_set_type(req, "text/html");
+  httpd_resp_send_chunk(req, header, strlen(header));
+  //httpd_resp_send_chunk(req, ip_str, strlen(ip_str));
+  httpd_resp_send_chunk(req, bottom, strlen(bottom));
+  httpd_resp_send_chunk(req, NULL, 0);
+  //httpd_resp_send(req, response_message, HTTPD_RESP_USE_STRLEN);
+  return ESP_OK;
 }
 

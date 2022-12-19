@@ -5,7 +5,8 @@
 #include "file_server_handler.h"
 #include "wifi_manager_handler.h"
 #include "credentials_handler.h"
-//#include "settings_handler.h"
+#include "settings_handler.h"
+#include "setttingsWifiHandler.h"
 
 char* readFile(fs::FS &fs, const char * path) {
     File file = fs.open(path);
@@ -59,13 +60,28 @@ void startCameraServer(){
     .handler   = take_photo_handler,
     .user_ctx  = NULL
   };
-  
+
+  httpd_uri_t settings_uri = {
+    .uri       = "/settings",
+    .method    = HTTP_GET,
+    .handler   = settings_handler,
+    .user_ctx  = NULL
+  };
+
+    httpd_uri_t setttingsWifiHandler_uri = {
+    .uri       = "/setttingsWifiHandler",
+    .method    = HTTP_POST,
+    .handler   = setttingsWifiHandler,
+    .user_ctx  = NULL
+  };
   //Serial.printf("Starting web server on port: '%d'\n", config.server_port);
   if (httpd_start(&stream_httpd, &config) == ESP_OK) {
     httpd_register_uri_handler(stream_httpd, &index_uri);
     httpd_register_uri_handler(stream_httpd, &capture_uri);
     httpd_register_uri_handler(stream_httpd, &files_uri);
     httpd_register_uri_handler(stream_httpd, &take_photo_uri);
+    httpd_register_uri_handler(stream_httpd, &settings_uri);
+    httpd_register_uri_handler(stream_httpd, &setttingsWifiHandler_uri);
   }
 }
 
