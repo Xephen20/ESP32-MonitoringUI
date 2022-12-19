@@ -5,8 +5,28 @@
 #include "file_server_handler.h"
 #include "wifi_manager_handler.h"
 #include "credentials_handler.h"
-
 //#include "settings_handler.h"
+
+char* readFile(fs::FS &fs, const char * path) {
+    File file = fs.open(path);
+    if(!file){
+        Serial.println("Failed to open file for reading");
+        return "Fail";
+    }
+
+    // Determine the size of the file
+    size_t size = file.size();
+
+    // Allocate a buffer to hold the file contents
+    char* buffer = new char[size + 1];
+
+    // Read the entire file into the buffer
+    size_t bytes_read = file.read((uint8_t*)buffer, size);
+    buffer[bytes_read] = '\0'; // null-terminate the buffer
+
+    file.close();
+    return buffer;
+}
 
 void startCameraServer(){
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -84,9 +104,6 @@ void setupCamera(){
     return;
   }
   
-  uint64_t cardSize = SD_MMC.cardSize() / (1024 * 1024);
-  Serial.printf("\nSD_MMC Card Size: %lluMB\n", cardSize);
-  
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   if(!getLocalTime(&timeinfo)){
     Serial.println("Failed to obtain time");
@@ -98,7 +115,8 @@ void setupCamera(){
 
 void wifiManager(){
   Serial.println("\nNot Connected to WIFI, Setting AP (Access Point)");
-    // NULL sets an open Access Point
+  delay(200);
+  // NULL sets an open Access Point
   WiFi.softAP("ESP-WIFI-MANAGER", NULL);
 
   IPAddress IP = WiFi.softAPIP();
@@ -130,16 +148,40 @@ void wifiManager(){
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(false);
+  delay(1000);
+  if(!SD_MMC.begin()){
+    Serial.println("Card Mount Failed");
+    return;
+  }else{
+    uint64_t cardSize = SD_MMC.cardSize() / (1024 * 1024);
+    Serial.printf("\nSD_MMC Card Size: %lluMB\n", cardSize);
+  }
+  
   // Wi-Fi connection
-  WiFi.begin(ssid_temp, password_temp);
-  int check_conn = 0;
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    if (check_conn == 20){
-      break;
+
+  const char* ssid = readFile(SD_MMC, "/ssid.txt");
+  delay(100);
+  const char* pass = readFile(SD_MMC, "/pass.txt");
+  delay(100);
+  const char* ip = readFile(SD_MMC, "/ip.txt");
+  delay(100);
+  // Serial.println(ssid);
+  // Serial.println(pass);
+  // Serial.println(ip);
+  if (strlen(ssid) > 0 && strlen(pass) > 0){ // Try to connect to Wi-Fi
+    WiFi.begin(ssid, pass);
+    int check_conn = 0;
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+      if (check_conn == 20){
+        break;
+      }
+      check_conn++;
     }
-    check_conn++;
+  }
+  else {
+    wifiManager();
   }
   if (WiFi.status() == WL_CONNECTED){ // Begin Program
     
@@ -147,16 +189,12 @@ void setup() {
     Serial.println("WiFi connected");
     Serial.print("Camera Stream Ready! Go to: http://");
     Serial.print(WiFi.localIP());
-
-    if(!SD_MMC.begin()){
-      Serial.println("Card Mount Failed");
-      return;
-    }
     setupCamera();
 
   } else { // Run WIFI Manager
     wifiManager();
   }
+  
 }
 
 void loop() {

@@ -1,10 +1,3 @@
-// Wifi Credentials
-const char* ssid_temp = "PLAY Internet 4G 2.4 GHz";
-const char* password_temp = "F894BDF5FOO";
-
-//const char* ssid = "iPhone 13 Pro (Dawid)";
-//const char* password = "dupa1234";
-
 #define PART_BOUNDARY "123456789000000000000987654321"
 #define CAMERA_MODEL_AI_THINKER
 

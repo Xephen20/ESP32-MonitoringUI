@@ -1,3 +1,18 @@
+void writeFile(fs::FS &fs, const char * path, const char * message){
+    Serial.printf("Writing file: %s\n", path);
+
+    File file = fs.open(path, FILE_WRITE);
+    if(!file){
+        Serial.println("Failed to open file for writing");
+        return;
+    }
+    if(file.print(message)){
+        Serial.println("File written");
+    } else {
+        Serial.println("Write failed");
+    }
+}
+
 static esp_err_t credentials_handler(httpd_req_t *req){
     char url[100];
 
@@ -47,7 +62,11 @@ static esp_err_t credentials_handler(httpd_req_t *req){
     printf("ssid: %s\n", ssid);
     printf("pass: %s\n", pass);
     printf("ip: %s\n", ip);
-    
+    writeFile(SD_MMC, "/ssid.txt", ssid);
+    writeFile(SD_MMC, "/pass.txt", pass);
+    writeFile(SD_MMC, "/ip.txt", ip);
+    delay(1000);
+    ESP.restart();
     char *response_message = "<!DOCTYPE html>\
         <html>\
         <head>\
