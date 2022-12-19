@@ -1,5 +1,4 @@
-static esp_err_t get_handler(httpd_req_t *req)
-{
+static esp_err_t get_handler(httpd_req_t *req){
     char *response_message = "<html>\
 <head></head>\
 <body>\

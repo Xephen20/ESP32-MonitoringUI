@@ -3,6 +3,9 @@
 #include "capture_handler.h"
 #include "website_handler.h"
 #include "file_server_handler.h"
+#include "wifi_manager_handler.h"
+#include "credentials_handler.h"
+
 //#include "settings_handler.h"
 
 void startCameraServer(){
@@ -46,12 +49,8 @@ void startCameraServer(){
   }
 }
 
-void setup() {
+void setupCamera(){
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
- 
-  Serial.begin(115200);
-  Serial.setDebugOutput(false);
-  
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -73,7 +72,6 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG; 
-
   config.frame_size = FRAMESIZE_SVGA;
   config.jpeg_quality = 12;
   config.fb_count = 1;
@@ -83,22 +81,6 @@ void setup() {
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed with error 0x%x", err);
-    return;
-  }
-  // Wi-Fi connection
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  
-  Serial.print("Camera Stream Ready! Go to: http://");
-  Serial.print(WiFi.localIP());
-
-  if(!SD_MMC.begin()){
-    Serial.println("Card Mount Failed");
     return;
   }
   
@@ -112,6 +94,69 @@ void setup() {
   }
 
   startCameraServer();
+}
+
+void wifiManager(){
+  Serial.println("\nNot Connected to WIFI, Setting AP (Access Point)");
+    // NULL sets an open Access Point
+  WiFi.softAP("ESP-WIFI-MANAGER", NULL);
+
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
+  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+  config.server_port = 80;
+
+  httpd_uri_t wifi_manager = {
+    .uri       = "/",
+    .method    = HTTP_GET,
+    .handler   = wifi_manager_handler,
+    .user_ctx  = NULL
+  };
+
+  httpd_uri_t manager_credentials = {
+    .uri       = "/credentials",
+    .method    = HTTP_POST,
+    .handler   = credentials_handler,
+    .user_ctx  = NULL
+  };
+  
+  if (httpd_start(&stream_httpd, &config) == ESP_OK) {
+    httpd_register_uri_handler(stream_httpd, &wifi_manager);
+    httpd_register_uri_handler(stream_httpd, &manager_credentials);
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.setDebugOutput(false);
+  // Wi-Fi connection
+  WiFi.begin(ssid_temp, password_temp);
+  int check_conn = 0;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    if (check_conn == 20){
+      break;
+    }
+    check_conn++;
+  }
+  if (WiFi.status() == WL_CONNECTED){ // Begin Program
+    
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.print("Camera Stream Ready! Go to: http://");
+    Serial.print(WiFi.localIP());
+
+    if(!SD_MMC.begin()){
+      Serial.println("Card Mount Failed");
+      return;
+    }
+    setupCamera();
+
+  } else { // Run WIFI Manager
+    wifiManager();
+  }
 }
 
 void loop() {

@@ -1,6 +1,6 @@
 // Wifi Credentials
-const char* ssid = "PLAY Internet 4G 2.4 GHz";
-const char* password = "F894BDF5";
+const char* ssid_temp = "PLAY Internet 4G 2.4 GHz";
+const char* password_temp = "F894BDF5FOO";
 
 //const char* ssid = "iPhone 13 Pro (Dawid)";
 //const char* password = "dupa1234";
@@ -42,3 +42,22 @@ const int   daylightOffset_sec = 3600;
 
 struct tm timeinfo;
 char time_string[128];
+
+// WIFI Manager
+
+// Search for parameter in HTTP POST request
+const char* PARAM_INPUT_1 = "ssid";
+const char* PARAM_INPUT_2 = "pass";
+const char* PARAM_INPUT_3 = "ip";
+
+//Variables to save values from HTML form
+String ssid_manager;
+String pass_manager;
+String ip_manager;
+
+// File paths to save input values permanently
+const char* ssidPath = "/ssid.txt";
+const char* passPath = "/pass.txt";
+const char* ipPath = "/ip.txt";
+
+IPAddress localIP;
