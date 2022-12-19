@@ -7,6 +7,48 @@
 #include "credentials_handler.h"
 #include "settings_handler.h"
 #include "setttingsWifiHandler.h"
+#include "catch_all_handler.h"
+
+bool checkIfFilesExist(fs::FS &fs, const char * dirname, uint8_t levels){
+    bool ssid_exist = false;
+    bool pass_exist = false;
+    bool ip_exist = false;
+
+    File root = fs.open(dirname);
+    File file = root.openNextFile();
+
+    while(file){
+        if(!file.isDirectory()){
+          if (strncmp(file.name(), "ssid.txt", 8) == 0){
+            ssid_exist = true;
+            Serial.println("ssid exist");
+          }
+          if (strncmp(file.name(), "pass.txt", 8) == 0){
+            pass_exist = true;
+            Serial.println("pass exist");
+          }
+          if (strncmp(file.name(), "ip.txt", 6) == 0){
+            ip_exist = true;
+            Serial.println("ip exist");
+          }
+        }
+        file = root.openNextFile();
+    }
+    if(ssid_exist == false){
+      writeFile(SD_MMC, "/ssid.txt", " ");
+      Serial.println("File SSID not exist, Creating /ssid.txt");
+    }
+    if(pass_exist == false){
+      writeFile(SD_MMC, "/pass.txt", " ");
+      Serial.println("File SSID not exist, Creating /pass.txt");
+    }
+    if(ip_exist == false){
+      writeFile(SD_MMC, "/ip.txt", " ");
+      Serial.println("File SSID not exist, Creating /ip.txt");
+    }
+    if (ssid_exist == false|| pass_exist == false || ip_exist == false){return false;};
+    return true;
+}
 
 char* readFile(fs::FS &fs, const char * path) {
     File file = fs.open(path);
@@ -181,35 +223,39 @@ void setup() {
   delay(100);
   const char* ip = readFile(SD_MMC, "/ip.txt");
   delay(100);
-  // Serial.println(ssid);
-  // Serial.println(pass);
-  // Serial.println(ip);
-  if (strlen(ssid) > 0 && strlen(pass) > 0){ // Try to connect to Wi-Fi
-    WiFi.begin(ssid, pass);
-    int check_conn = 0;
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-      if (check_conn == 20){
-        break;
+  bool check_files_exist = false;
+  check_files_exist = checkIfFilesExist(SD_MMC, "/", 0);
+  if (check_files_exist == 1){
+    if (strlen(ssid) > 0 && strlen(pass) > 0){ // Try to connect to Wi-Fi
+      WiFi.begin(ssid, pass);
+      int check_conn = 0;
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+        if (check_conn == 20){
+          break;
+        }
+        check_conn++;
       }
-      check_conn++;
     }
-  }
-  else {
-    wifiManager();
-  }
-  if (WiFi.status() == WL_CONNECTED){ // Begin Program
-    
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.print("Camera Stream Ready! Go to: http://");
-    Serial.print(WiFi.localIP());
-    setupCamera();
+    else {
+      wifiManager();
+    }
+    if (WiFi.status() == WL_CONNECTED){ // Begin Program
+      
+      Serial.println("");
+      Serial.println("WiFi connected");
+      Serial.print("Camera Stream Ready! Go to: http://");
+      Serial.print(WiFi.localIP());
+      setupCamera();
 
-  } else { // Run WIFI Manager
+    } else { // Run WIFI Manager
+      wifiManager();
+    }
+  }else {
     wifiManager();
   }
+  
   
 }
 
