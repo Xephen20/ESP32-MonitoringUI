@@ -255,8 +255,6 @@ void setup() {
   }else {
     wifiManager();
   }
-  
-  
 }
 
 void loop() {

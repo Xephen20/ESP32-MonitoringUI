@@ -122,10 +122,12 @@ static esp_err_t file_server_handler(httpd_req_t *req){
     for (size_t i = 0; i < file_count; i++) {
         if (file_names[i]) {
             if (strncmp(file_names[i], "._", 2) != 0) {
-                //Serial.println(file_names[i]);
-                httpd_resp_send_chunk(req, "<li>", strlen("<li>"));
-                httpd_resp_send_chunk(req, file_names[i], strlen(file_names[i]));
-                httpd_resp_send_chunk(req, "</li>", strlen("</li>"));
+                if (!strcmp(strrchr(file_names[i], '\0') - 4, ".jpg")){
+                    //Serial.println(file_names[i]);
+                    httpd_resp_send_chunk(req, "<li>", strlen("<li>"));
+                    httpd_resp_send_chunk(req, file_names[i], strlen(file_names[i]));
+                    httpd_resp_send_chunk(req, "</li>", strlen("</li>"));
+                }
             }
         }
     }
